@@ -79,11 +79,6 @@ export default class CredentialService implements ICredentialService {
       if (user) throw new BadRequest('User taken');
       const strongPass = body.password;
       if (!user) {
-        // emailService.send({
-        //   to: body.email,
-        //   subject: 'Account Credentials',
-        //   html: `<p>Your account email: ${body.email}</p><p>Your account password: ${strongPass}</p><p>Click on the link if you are interested: <a href="${process.env.WEB_URI}/login/${encodeURIComponent(body.email)}/${encodeURIComponent(strongPass)}">Click here</a></p>`,
-        // });
         user = await userService.createUserRaw(
           {
             email: body.email ?? '',
@@ -92,8 +87,7 @@ export default class CredentialService implements ICredentialService {
           { t },
         );
       }
-      console.log({user: user.id});
-      if(!user) throw new BadRequest('Error while creating user!');
+      if (!user) throw new BadRequest('Error while creating user!');
       const hashPassword = await this.hashPassword(strongPass);
       await this._repo.create(
         {
@@ -115,20 +109,18 @@ export default class CredentialService implements ICredentialService {
     try {
       const user = await userService.findUserByRaw({ email: args.email }, { t });
       if (!user) throw new BadRequest('User not found');
-      const purposes = await user.getPurposes();
       const credential = await user.getCredential();
       if (!credential) throw new BadRequest('Invalid credentials');
       const isPasswordValid = await this.verifyPassword(args.password, credential.dataValues.password);
       if (!isPasswordValid) throw new BadRequest('Invalid credentials');
 
       const tokens = await this.createTokens({
-          payload: {
-            user: user,
-            selectedGoal: purposes[0]?.dataValues,
-          },
-          secret: credential.dataValues.password,
-        });
-      const response = { ...tokens, user, selectedGoal: purposes[0]?.dataValues };
+        payload: {
+          user: user,
+        },
+        secret: credential.dataValues.password,
+      });
+      const response = { ...tokens, user };
       await t.commit();
       return response;
     } catch (err) {
@@ -162,7 +154,7 @@ export default class CredentialService implements ICredentialService {
     const user = await userService.findUserByRaw({ id: userId });
     if (!user) throw new BadRequest('User not found');
     const credential = await user.getCredential();
-    if(!credential) throw new BadRequest('Invalid credentials');
+    if (!credential) throw new BadRequest('Invalid credentials');
     const tokens = await this.createTokens({
       payload: {
         user: user?.dataValues,

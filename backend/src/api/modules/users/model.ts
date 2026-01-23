@@ -8,7 +8,6 @@ export default class User extends Model<InferAttributes<User>, InferCreationAttr
   declare email: string;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-  declare type: UserType;
   declare getCredential: HasOneGetAssociationMixin<Credential>;
 }
 
@@ -25,10 +24,6 @@ User.init(
       type: new DataTypes.STRING(128),
       allowNull: false,
       unique: true,
-    },
-    type: {
-      type: DataTypes.ENUM(...Object.values(UserType)),
-      allowNull: false,
     },
     createdAt: {
       field: 'created_at',
