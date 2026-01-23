@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ApiResponse, InternalServerError, UnauthorizedError } from '../../utils';
 import jwt from 'jsonwebtoken';
-import { credentialService, userService } from '../modules/bootstrap';
+import { credentialService } from '../modules/bootstrap';
 import { IUser } from '../modules/users/types';
 
 export default async function isAuthenticated(req: Request, res: Response, next: NextFunction) {
@@ -10,9 +10,7 @@ export default async function isAuthenticated(req: Request, res: Response, next:
     if (!accessToken) throw new Error('Unauthorized!');
     const decodedToken = jwt.decode(accessToken) as { user: IUser };
     if (!decodedToken.user?.id) throw new Error('Unauthorized!');
-    const userFromDb = await userService.findUserById(decodedToken.user?.id);
-    if (!userFromDb?.id) throw new Error('Unauthorized!');
-    const credential = await credentialService.getCredentialByUser({ userId: userFromDb.id });
+    const credential = await credentialService.getCredentialByUser({ userId: decodedToken.user.id });
     if (!credential?.dataValues?.id) throw new Error('Unauthorized!');
 
     const { user } = (await credentialService.verifyAccessToken(
