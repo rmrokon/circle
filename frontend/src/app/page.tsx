@@ -10,7 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     if (accessToken) {
-      router.push("/purposes");
+      router.push("/dashboard");
     } else {
       router.push("/login");
     }
