@@ -7,7 +7,7 @@ export const useServiceTypes = () => {
         queryKey: ["service-types"],
         queryFn: async () => {
             const response = await apiClient.get("/service-types");
-            return response.data.data;
+            return response.data.result;
         },
     });
 };
