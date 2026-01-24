@@ -27,6 +27,7 @@ import { useAuthStore } from '@/store/use-auth-store';
 import { useLogout } from '@/hooks/use-auth';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -66,7 +67,7 @@ export function AppSidebar() {
                         <SidebarMenu>
                             {navigation.map((item) => (
                                 <SidebarMenuItem key={item.name}>
-                                    <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.name}>
+                                    <SidebarMenuButton asChild isActive={pathname === item.href} tooltip={item.name} className={cn(pathname === item.href && "bg-sidebar-accent text-sidebar-accent-foreground")}>
                                         <Link href={item.href}>
                                             <item.icon className="size-4" />
                                             <span>{item.name}</span>

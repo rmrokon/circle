@@ -475,7 +475,7 @@ const sidebarMenuButtonVariants = cva(
     {
         variants: {
             variant: {
-                default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                default: "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground",
                 outline: "bg-background hover:bg-sidebar-accent hover:text-sidebar-accent-foreground shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
             },
             size: {
@@ -506,13 +506,11 @@ function SidebarMenuButton({
 } & VariantProps<typeof sidebarMenuButtonVariants>) {
     const Comp = asChild ? Slot.Root : "button"
     const { isMobile, state } = useSidebar()
-
     const button = (
         <Comp
             data-slot="sidebar-menu-button"
             data-sidebar="menu-button"
             data-size={size}
-            data-active={isActive}
             className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
             {...props}
         />
