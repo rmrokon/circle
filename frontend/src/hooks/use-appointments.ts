@@ -7,7 +7,7 @@ export const useAppointments = () => {
         queryKey: ["appointments"],
         queryFn: async () => {
             const response = await apiClient.get("/appointments");
-            return response.data.data;
+            return response.data.result;
         },
     });
 };

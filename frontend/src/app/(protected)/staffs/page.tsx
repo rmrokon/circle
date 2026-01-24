@@ -33,17 +33,21 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Edit, Plus, UserPlus } from "lucide-react";
+import { StaffAvailablityStatus } from "../../../../types/staff";
+import { useServiceTypes } from "@/hooks/use-service-types";
 
 const staffSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    daily_capacity: z.coerce.number().min(1, "Capacity must be at least 1"),
-    available: z.enum(["available", "onLeave"]),
+    daily_capacity: z.coerce.number<number>().min(1, "Capacity must be at least 1"),
+    available: z.enum(StaffAvailablityStatus),
+    service_type_id: z.string().min(1, "Service type is required"),
 });
 
 export default function StaffsPage() {
     const { data: staffs, isLoading } = useStaffs();
     const createStaffMutation = useCreateStaff();
     const updateStaffMutation = useUpdateStaff();
+    const { data: serviceTypes, isLoading: isLoadingTypes } = useServiceTypes();
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [editingStaff, setEditingStaff] = useState<any>(null);
@@ -53,11 +57,14 @@ export default function StaffsPage() {
         defaultValues: {
             name: "",
             daily_capacity: 5,
-            available: "available",
+            available: StaffAvailablityStatus.available,
+            service_type_id: "",
         },
     });
 
     const onSubmit = (values: z.infer<typeof staffSchema>) => {
+        console.log({ values });
+        // return;
         if (editingStaff) {
             updateStaffMutation.mutate(
                 { id: editingStaff.id, data: values },
@@ -94,7 +101,7 @@ export default function StaffsPage() {
         form.reset({
             name: "",
             daily_capacity: 5,
-            available: "available",
+            available: StaffAvailablityStatus.available,
         });
         setIsDialogOpen(true);
     };
@@ -146,8 +153,8 @@ export default function StaffsPage() {
                                     <TableCell>
                                         <span
                                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.available === "available"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
                                                 }`}
                                         >
                                             {staff.available === "available" ? "Available" : "On Leave"}
@@ -216,6 +223,30 @@ export default function StaffsPage() {
                                             <SelectContent>
                                                 <SelectItem value="available">Available</SelectItem>
                                                 <SelectItem value="onLeave">On Leave</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="service_type_id"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Service Type</FormLabel>
+                                        <Select onValueChange={field.onChange} value={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select type" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {serviceTypes?.map((t: any) => (
+                                                    <SelectItem key={t.id} value={t.id}>
+                                                        {t.name}
+                                                    </SelectItem>
+                                                ))}
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

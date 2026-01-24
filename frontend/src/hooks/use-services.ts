@@ -7,7 +7,7 @@ export const useServices = () => {
         queryKey: ["services"],
         queryFn: async () => {
             const response = await apiClient.get("/services");
-            return response.data.data;
+            return response.data.result;
         },
     });
 };

@@ -37,7 +37,7 @@ import { Edit, Plus } from "lucide-react";
 
 const serviceSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    duration: z.coerce.number().min(1, "Duration must be at least 1 minute"),
+    duration: z.coerce.number<number>().min(30, "Duration must be at least 30 minutes"),
     serviceTypeId: z.string().min(1, "Service Type is required"),
 });
 

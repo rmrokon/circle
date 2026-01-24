@@ -7,7 +7,7 @@ export const useStaffs = () => {
         queryKey: ["staffs"],
         queryFn: async () => {
             const response = await apiClient.get("/staffs");
-            return response.data.data;
+            return response.data.result;
         },
     });
 };
@@ -17,7 +17,7 @@ export const useCreateStaff = () => {
     return useMutation({
         mutationFn: async (staffData: any) => {
             const response = await apiClient.post("/staffs", staffData);
-            return response.data;
+            return response.data.result;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["staffs"] });
@@ -34,7 +34,7 @@ export const useUpdateStaff = () => {
     return useMutation({
         mutationFn: async ({ id, data }: { id: string; data: any }) => {
             const response = await apiClient.patch(`/staffs/${id}`, data);
-            return response.data;
+            return response.data.result;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["staffs"] });

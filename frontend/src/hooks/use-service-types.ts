@@ -17,7 +17,7 @@ export const useCreateServiceType = () => {
     return useMutation({
         mutationFn: async (data: any) => {
             const response = await apiClient.post("/service-types", data);
-            return response.data;
+            return response.data.result;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["service-types"] });
@@ -34,7 +34,7 @@ export const useUpdateServiceType = () => {
     return useMutation({
         mutationFn: async ({ id, data }: { id: string; data: any }) => {
             const response = await apiClient.patch(`/service-types/${id}`, data);
-            return response.data;
+            return response.data.result;
         },
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["service-types"] });
