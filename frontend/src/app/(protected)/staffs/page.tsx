@@ -149,7 +149,7 @@ export default function StaffsPage() {
                                 <TableRow key={staff.id}>
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell className="font-medium">{staff.name}</TableCell>
-                                    <TableCell>{staff.daily_capacity}</TableCell>
+                                    <TableCell>{staff.dailyCapacity}</TableCell>
                                     <TableCell>
                                         <span
                                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.available === "available"

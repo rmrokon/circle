@@ -15,6 +15,8 @@ export default function validateRequestBody<T>(schema: z.ZodType<T>) {
         }));
         return new ApiResponse(res).error(new UnprocessableFields('Invalid fields', errors));
       }
+      console.log(error);
+      return next(error);
     }
   };
 }

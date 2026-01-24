@@ -51,7 +51,7 @@ export const StaffRouter = Router();
  *         description: List of staff members retrieved
  */
 StaffRouter.route('/')
-    .post([isAuthenticated], asyncCatchHandler(staffController.createStaff))
+    .post([isAuthenticated, validateRequestBody(StaffBodyValidationSchema)], asyncCatchHandler(staffController.createStaff))
     .get([isAuthenticated], asyncCatchHandler(staffController.getStaffs));
 
 /**
