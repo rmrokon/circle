@@ -1,4 +1,4 @@
-import { CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from '@sequelize/core';
+import { BelongsToManyGetAssociationsMixin, BelongsToManySetAssociationsMixin, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from '@sequelize/core';
 import { sequelize } from '../../../loaders/datasource';
 import { StaffAvailablityStatus } from './types';
 
@@ -9,6 +9,8 @@ export default class Staff extends Model<InferAttributes<Staff>, InferCreationAt
     declare available: CreationOptional<StaffAvailablityStatus>;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
+    declare setServiceTypes: BelongsToManySetAssociationsMixin<ServiceType, ServiceType["id"]>;
+    declare getServiceTypes: BelongsToManyGetAssociationsMixin<ServiceType>;
 }
 
 Staff.init(

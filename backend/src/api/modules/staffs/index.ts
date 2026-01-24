@@ -36,6 +36,8 @@ export const StaffRouter = Router();
  *               available:
  *                 type: string
  *                 enum: [available, onLeave]
+ *               service_type_id:
+ *                 type: string
  *     responses:
  *       201:
  *         description: Staff created successfully
@@ -49,7 +51,7 @@ export const StaffRouter = Router();
  *         description: List of staff members retrieved
  */
 StaffRouter.route('/')
-    .post([isAuthenticated, validateRequestBody(StaffBodyValidationSchema)], asyncCatchHandler(staffController.createStaff))
+    .post([isAuthenticated], asyncCatchHandler(staffController.createStaff))
     .get([isAuthenticated], asyncCatchHandler(staffController.getStaffs));
 
 /**
