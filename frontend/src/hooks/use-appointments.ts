@@ -2,11 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api";
 import { toast } from "react-hot-toast";
 
-export const useAppointments = () => {
+export const useAppointments = (params?: any) => {
     return useQuery({
-        queryKey: ["appointments"],
+        queryKey: ["appointments", params],
         queryFn: async () => {
-            const response = await apiClient.get("/appointments");
+            const response = await apiClient.get("/appointments", { params });
             return response.data.result;
         },
     });

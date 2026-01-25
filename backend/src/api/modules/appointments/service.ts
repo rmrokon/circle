@@ -40,7 +40,21 @@ export default class AppointmentService implements IAppointmentService {
     }
 
     async getAppointments(query: Record<string, unknown>, options?: { t: Transaction }) {
-        const appointments = await this._repo.find(query, options);
+        const whereQuery = { ...query };
+        let isUnassigned = false;
+
+        if (whereQuery.unassigned === 'true' || whereQuery.unassigned === true) {
+            isUnassigned = true;
+            delete whereQuery.unassigned;
+            whereQuery.staffId = null;
+        }
+
+        const appointments = await this._repo.find(whereQuery as any, options);
+
+        if (isUnassigned) {
+            appointments.sort((a, b) => new Date(a.appointmentDateTime).getTime() - new Date(b.appointmentDateTime).getTime());
+        }
+
         return appointments.map((a) => this.convertToJson(a as unknown as IDataValues<IAppointment>)!);
     }
 

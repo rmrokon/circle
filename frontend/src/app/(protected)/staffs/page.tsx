@@ -33,7 +33,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Edit, Plus, UserPlus } from "lucide-react";
-import { StaffAvailablityStatus } from "../../../../types/staff";
+import { StaffAvailablityStatus } from "../../../types/staff";
 import { useServiceTypes } from "@/hooks/use-service-types";
 import { Badge } from "@/components/ui/badge";
 

@@ -22,7 +22,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { LayoutDashboard, Users, UserCog, Briefcase, Calendar, ChevronsUpDown, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, UserCog, Briefcase, Calendar, ChevronsUpDown, LogOut, Clock } from 'lucide-react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { useLogout } from '@/hooks/use-auth';
 import { usePathname } from 'next/navigation';
@@ -31,10 +31,11 @@ import { cn } from '@/lib/utils';
 
 const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+    { name: 'Waiting Queue', href: '/waiting-queue', icon: Clock },
+    { name: 'Appoinments', href: '/appointments', icon: Calendar },
     { name: 'Staffs', href: '/staffs', icon: UserCog },
     { name: 'Service Types', href: '/service-types', icon: Briefcase },
     { name: 'Services', href: '/services', icon: Users },
-    { name: 'Appointments', href: '/appointments', icon: Calendar },
 ];
 
 export function AppSidebar() {
