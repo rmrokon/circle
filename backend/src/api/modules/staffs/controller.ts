@@ -16,7 +16,7 @@ export default class StaffController {
     };
 
     getStaffs = async (req: Request, res: Response) => {
-        const staffs = await this._service.getStaffs(req.query);
+        const staffs = await this._service.getStaffsWithAppointments(req.query);
         return SuccessResponses(req, res, staffs, { statusCode: 200 });
     };
 

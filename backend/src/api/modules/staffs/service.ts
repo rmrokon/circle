@@ -1,12 +1,14 @@
-import { Transaction } from '@sequelize/core';
-import { IDataValues } from '../../../utils/index.js';
-import { IStaff } from './types.js';
-import { IStaffRequestBody } from './validations.js';
-import StaffRepository from './repository.js';
+import { Op, Transaction } from '@sequelize/core';
+import { IDataValues } from '../../../utils/index';
+import { IStaff } from './types';
+import { IStaffRequestBody } from './validations';
+import StaffRepository from './repository';
+import Appointment from '../appointments/model';
 
 export interface IStaffService {
     createStaff(body: IStaffRequestBody, options?: { t: Transaction }): Promise<IStaff>;
     getStaffs(query: Record<string, unknown>, options?: { t: Transaction }): Promise<IStaff[]>;
+    getStaffsWithAppointments(query: Record<string, unknown>, options?: { t: Transaction }): Promise<IStaff[]>;
     updateStaff(
         query: Partial<IStaffRequestBody> & { id: string },
         body: Partial<IStaffRequestBody>,
@@ -41,6 +43,14 @@ export default class StaffService implements IStaffService {
         return staffs.map((staff) => this.convertToJson(staff as unknown as IDataValues<IStaff>)!);
     }
 
+    async getStaffsWithAppointments(query: Record<string, unknown>, options?: { t: Transaction }) {
+        const staffs = await this._repo.findAll({
+            ...query,
+            // include: [Appointment],
+        }, options);
+        return staffs;
+    }
+
     async updateStaff(
         query: Partial<IStaffRequestBody> & { id: string },
         body: Partial<IStaffRequestBody>,
@@ -53,5 +63,23 @@ export default class StaffService implements IStaffService {
     async findStaffById(id: string, options?: { t: Transaction }) {
         const staff = await this._repo.findById(id, options);
         return this.convertToJson(staff as unknown as IDataValues<IStaff>);
+    }
+
+    async findStaffAppointmentsForToday({ id, date }: { id: string, date: string }, options?: { t: Transaction }) {
+        const staff = await this._repo.findById(id, options);
+        if (!staff) throw new Error('Staff not found!');
+        const appointments = await staff.getAppointments({
+            where: {
+                appointmentDateTime: {
+                    [Op.gte]: date,
+                    [Op.lt]: date,
+                },
+            },
+        });
+        const staffJson = this.convertToJson(staff as unknown as IDataValues<IStaff>)!;
+        return {
+            ...staffJson,
+            appointments,
+        };
     }
 }

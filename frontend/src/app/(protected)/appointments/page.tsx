@@ -35,11 +35,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Edit, Plus, Calendar } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const appointmentSchema = z.object({
     customerName: z.string().min(1, "Customer name is required"),
     serviceId: z.string().min(1, "Service is required"),
-    staffId: z.string().min(1, "Staff is required"),
+    staffId: z.string().optional(),
     appointmentDateTime: z.string().min(1, "Date and time is required"),
     status: z.enum(["Scheduled", "Completed", "Cancelled", "No-Show"]),
 });
@@ -167,10 +168,10 @@ export default function AppointmentsPage() {
                                     <TableCell>
                                         <span
                                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${item.status === "Scheduled"
-                                                    ? "bg-blue-100 text-blue-700"
-                                                    : item.status === "Completed"
-                                                        ? "bg-green-100 text-green-700"
-                                                        : "bg-red-100 text-red-700"
+                                                ? "bg-blue-100 text-blue-700"
+                                                : item.status === "Completed"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
                                                 }`}
                                         >
                                             {item.status}
@@ -249,8 +250,13 @@ export default function AppointmentsPage() {
                                             </FormControl>
                                             <SelectContent>
                                                 {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
-                                                    <SelectItem key={s.id} value={s.id}>
-                                                        {s.name}
+                                                    <SelectItem key={s.id} value={s.id} disabled={s.appointments?.length >= s.dailyCapacity}>
+                                                        <div className="flex flex-col gap-2">
+                                                            <span>{s.name} ({s.appointments?.length} / {s.dailyCapacity} appointments today)</span>
+                                                            <Badge variant={s.appointments?.length >= s.dailyCapacity ? "destructive" : "default"}>
+                                                                {s.appointments?.length >= s.dailyCapacity ? `${s.name} already has ${s.appointments?.length} appointments today.` : "Available"}
+                                                            </Badge>
+                                                        </div>
                                                     </SelectItem>
                                                 ))}
                                             </SelectContent>

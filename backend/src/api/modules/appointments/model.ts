@@ -6,8 +6,8 @@ export default class Appointment extends Model<InferAttributes<Appointment>, Inf
     declare id: CreationOptional<string>;
     declare customerName: string;
     declare serviceId: string;
-    declare staffId: string;
-    declare appointmentDateTime: Date;
+    declare staffId: string | null;
+    declare appointmentDateTime: string;
     declare status: CreationOptional<AppointmentStatus>;
     declare createdAt: CreationOptional<Date>;
     declare updatedAt: CreationOptional<Date>;
@@ -35,11 +35,11 @@ Appointment.init(
         staffId: {
             field: 'staff_id',
             type: DataTypes.UUID,
-            allowNull: false,
+            allowNull: true,
         },
         appointmentDateTime: {
             field: 'appointment_date_time',
-            type: DataTypes.DATE,
+            type: DataTypes.STRING,
             allowNull: false,
         },
         status: {
@@ -83,6 +83,7 @@ Appointment.belongsTo(Service, {
 Appointment.belongsTo(Staff, {
     foreignKey: {
         name: 'staffId',
+        allowNull: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },

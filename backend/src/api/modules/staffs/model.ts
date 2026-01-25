@@ -1,4 +1,4 @@
-import { BelongsToManyGetAssociationsMixin, BelongsToManySetAssociationsMixin, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, Model } from '@sequelize/core';
+import { BelongsToManyGetAssociationsMixin, BelongsToManySetAssociationsMixin, CreationOptional, DataTypes, InferAttributes, InferCreationAttributes, HasManyGetAssociationsMixin, Model } from '@sequelize/core';
 import { sequelize } from '../../../loaders/datasource';
 import { StaffAvailablityStatus } from './types';
 
@@ -11,6 +11,7 @@ export default class Staff extends Model<InferAttributes<Staff>, InferCreationAt
     declare updatedAt: CreationOptional<Date>;
     declare setServiceTypes: BelongsToManySetAssociationsMixin<ServiceType, ServiceType["id"]>;
     declare getServiceTypes: BelongsToManyGetAssociationsMixin<ServiceType>;
+    declare getAppointments: HasManyGetAssociationsMixin<Appointment>;
 }
 
 Staff.init(
@@ -71,6 +72,7 @@ Staff.belongsToMany(ServiceType, {
 Staff.hasMany(Appointment, {
     foreignKey: {
         name: 'staffId',
+        allowNull: true,
         onDelete: 'CASCADE',
         onUpdate: 'CASCADE',
     },

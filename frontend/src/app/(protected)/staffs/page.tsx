@@ -35,6 +35,7 @@ import * as z from "zod";
 import { Edit, Plus, UserPlus } from "lucide-react";
 import { StaffAvailablityStatus } from "../../../../types/staff";
 import { useServiceTypes } from "@/hooks/use-service-types";
+import { Badge } from "@/components/ui/badge";
 
 const staffSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -127,6 +128,7 @@ export default function StaffsPage() {
                             <TableHead>No.</TableHead>
                             <TableHead>Name</TableHead>
                             <TableHead>Daily Capacity</TableHead>
+                            <TableHead>Today's Appointments</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -150,15 +152,19 @@ export default function StaffsPage() {
                                     <TableCell>{index + 1}</TableCell>
                                     <TableCell className="font-medium">{staff.name}</TableCell>
                                     <TableCell>{staff.dailyCapacity}</TableCell>
+                                    <TableCell>{staff.appointments?.length}</TableCell>
                                     <TableCell>
-                                        <span
+                                        {/* <span
                                             className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.available === "available"
                                                 ? "bg-green-100 text-green-700"
                                                 : "bg-red-100 text-red-700"
                                                 }`}
                                         >
                                             {staff.available === "available" ? "Available" : "On Leave"}
-                                        </span>
+                                        </span> */}
+                                        <Badge variant={staff.available === "available" ? "default" : "destructive"}>
+                                            {staff.available === "available" ? "Available" : "On Leave"}
+                                        </Badge>
                                     </TableCell>
                                     <TableCell className="text-right">
                                         <Button variant="ghost" size="sm" onClick={() => handleEdit(staff)}>

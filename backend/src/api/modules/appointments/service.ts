@@ -1,8 +1,9 @@
 import { Transaction } from '@sequelize/core';
-import { IDataValues } from '../../../utils/index.js';
-import { IAppointment } from './types.js';
-import { IAppointmentRequestBody } from './validations.js';
-import AppointmentRepository from './repository.js';
+import { IDataValues } from '../../../utils/index';
+import { IAppointment } from './types';
+import { IAppointmentRequestBody } from './validations';
+import AppointmentRepository from './repository';
+import { staffService } from '../bootstrap';
 
 export interface IAppointmentService {
     createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }): Promise<IAppointment>;
@@ -30,7 +31,11 @@ export default class AppointmentService implements IAppointmentService {
     }
 
     async createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }) {
-        const appointment = await this._repo.create(body, options);
+        if (body?.staffId) {
+            const staffAppointmentsForToday = await staffService.findStaffAppointmentsForToday({ id: body.staffId, date: body.appointmentDateTime }, options);
+            if (staffAppointmentsForToday.appointments.length >= staffAppointmentsForToday.dailyCapacity) throw new Error(`${staffAppointmentsForToday.name} is not available for this date!`);
+        }
+        const appointment = await this._repo.create({ ...body, staffId: body.staffId || null }, options);
         return this.convertToJson(appointment as IDataValues<IAppointment>)!;
     }
 
