@@ -1,6 +1,5 @@
 import { Sequelize } from '@sequelize/core';
 import { PostgresDialect } from '@sequelize/postgres';
-// import { Sequelize } from "sequelize-typescript";
 const { DB_NAME, DB_USER, DB_PASSWORD, DB_HOST, DB_PORT } = process.env;
 
 if (!DB_NAME || !DB_USER || !DB_PASSWORD || !DB_HOST || !DB_PORT)
