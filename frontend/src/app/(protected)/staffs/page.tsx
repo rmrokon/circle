@@ -130,7 +130,7 @@ export default function StaffsPage() {
                             <TableHead>Daily Capacity</TableHead>
                             <TableHead>Today's Appointments</TableHead>
                             <TableHead>Status</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            {!!staffs?.length && <TableHead className="text-right">Actions</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -154,23 +154,15 @@ export default function StaffsPage() {
                                     <TableCell>{staff.dailyCapacity}</TableCell>
                                     <TableCell>{staff.appointments?.length}</TableCell>
                                     <TableCell>
-                                        {/* <span
-                                            className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${staff.available === "available"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
-                                                }`}
-                                        >
-                                            {staff.available === "available" ? "Available" : "On Leave"}
-                                        </span> */}
                                         <Badge variant={staff.available === "available" ? "default" : "destructive"}>
                                             {staff.available === "available" ? "Available" : "On Leave"}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    {!!staffs?.length && <TableCell className="text-right">
                                         <Button variant="ghost" size="sm" onClick={() => handleEdit(staff)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                    </TableCell>
+                                    </TableCell>}
                                 </TableRow>
                             ))
                         )}
