@@ -32,13 +32,13 @@ export default class StaffService implements IStaffService {
     }
 
     async createStaff(body: IStaffRequestBody, options?: { t: Transaction }) {
-        const { service_type_id, ...rest } = body;
+        const { serviceTypeId, ...rest } = body;
         const staff = await this._repo.create(rest, options);
-        if (service_type_id) {
-            await (staff as any).setServiceTypes([service_type_id]);
+        if (serviceTypeId) {
+            await (staff as any).setServiceTypes([serviceTypeId]);
         }
         const json = this.convertToJson(staff as IDataValues<IStaff>)! as any;
-        json.serviceTypeId = service_type_id;
+        json.serviceTypeId = serviceTypeId;
         return json;
     }
 

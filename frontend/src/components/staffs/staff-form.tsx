@@ -25,9 +25,9 @@ import { IStaff, StaffAvailablityStatus } from "@/types/staff";
 
 const staffSchema = z.object({
     name: z.string().min(1, "Name is required"),
-    daily_capacity: z.coerce.number<number>().min(1, "Capacity must be at least 1"),
+    dailyCapacity: z.coerce.number<number>().min(1, "Capacity must be at least 1"),
     available: z.enum(StaffAvailablityStatus),
-    service_type_id: z.string().min(1, "Service type is required"),
+    serviceTypeId: z.string().min(1, "Service type is required"),
 });
 
 interface StaffFormProps {
@@ -51,33 +51,33 @@ export function StaffForm({
         resolver: zodResolver(staffSchema),
         defaultValues: {
             name: "",
-            daily_capacity: 5,
+            dailyCapacity: 5,
             available: StaffAvailablityStatus.available,
-            service_type_id: "",
         },
     });
 
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
+                console.log({ initialData });
                 form.reset({
                     name: initialData.name,
-                    daily_capacity: initialData.dailyCapacity,
+                    dailyCapacity: initialData.dailyCapacity,
                     available: initialData.available,
-                    service_type_id: initialData.serviceTypeId || (initialData as any).service_type_id || "",
+                    serviceTypeId: initialData.serviceTypes[0]?.id,
                 });
             } else {
                 form.reset({
                     name: "",
-                    daily_capacity: 5,
+                    dailyCapacity: 5,
                     available: StaffAvailablityStatus.available,
-                    service_type_id: "",
                 });
             }
         }
     }, [isOpen, initialData, form]);
 
     const handleSubmit = (values: z.infer<typeof staffSchema>) => {
+        console.log({ values });
         onSubmit(values);
     };
     return (
@@ -106,7 +106,7 @@ export function StaffForm({
                         />
                         <FormField
                             control={form.control}
-                            name="daily_capacity"
+                            name="dailyCapacity"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Daily Capacity</FormLabel>
@@ -140,7 +140,7 @@ export function StaffForm({
                         />
                         <FormField
                             control={form.control}
-                            name="service_type_id"
+                            name="serviceTypeId"
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Service Type</FormLabel>

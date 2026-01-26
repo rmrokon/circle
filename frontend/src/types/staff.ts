@@ -10,7 +10,6 @@ export interface IStaff {
     name: string;
     dailyCapacity: number;
     available: StaffAvailablityStatus;
-    serviceTypeId: string;
     createdAt: Date;
     updatedAt: Date;
     serviceTypes: IServiceType[];

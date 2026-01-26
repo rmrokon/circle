@@ -15,7 +15,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
@@ -148,16 +148,19 @@ export function AppointmentForm({
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
-                                                <SelectItem key={s.id} value={s.id}>
-                                                    <div className="flex flex-col gap-2">
-                                                        <span>{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
-                                                        <Badge variant={(s.appointments?.length || 0) >= s.dailyCapacity ? "destructive" : "default"}>
-                                                            {(s.appointments?.length || 0) >= s.dailyCapacity ? `${s.name} already has ${s.appointments?.length || 0} appointments today.` : "Available"}
-                                                        </Badge>
-                                                    </div>
-                                                </SelectItem>
-                                            ))}
+                                            <SelectGroup>
+                                                <SelectLabel>Staffs</SelectLabel>
+                                                {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
+                                                    <SelectItem key={s.id} value={s.id}>
+                                                        <div className="flex flex-col gap-1">
+                                                            <span>{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
+                                                            <Badge variant={(s.appointments?.length || 0) >= s.dailyCapacity ? "destructive" : "default"} className="text-[9px]">
+                                                                {(s.appointments?.length || 0) >= s.dailyCapacity ? `${s.name} already has ${s.appointments?.length || 0} appointments today.` : "Available"}
+                                                            </Badge>
+                                                        </div>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectGroup>
                                         </SelectContent>
                                     </Select>
                                     <FormMessage />
