@@ -61,6 +61,25 @@ export function AppointmentForm({
         },
     });
 
+    const selectedServiceId = form.watch("serviceId");
+    const selectedService = services?.find(s => s.id === selectedServiceId);
+    const selectedServiceTypeId = selectedService?.serviceTypeId || (selectedService as any)?.service_type_id;
+
+    const filteredStaffs = staffs?.filter((s: any) => {
+        const isAvailable = s.available === "available";
+        const matchesServiceType = s.serviceTypes?.some((st: any) => st.id === selectedServiceTypeId) || s.serviceTypeId === selectedServiceTypeId;
+        return isAvailable && matchesServiceType;
+    });
+
+    useEffect(() => {
+        const subscription = form.watch((value, { name }) => {
+            if (name === "serviceId") {
+                form.setValue("staffId", "");
+            }
+        });
+        return () => subscription.unsubscribe();
+    }, [form]);
+
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
@@ -152,7 +171,7 @@ export function AppointmentForm({
                                         <SelectContent>
                                             <SelectGroup>
                                                 <SelectLabel>Staffs</SelectLabel>
-                                                {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
+                                                {filteredStaffs?.map((s: any) => (
                                                     <SelectItem key={s.id} value={s.id}>
                                                         <div className="flex flex-col gap-[4px] p-[4px]">
                                                             <span className="text-[12px]">{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
