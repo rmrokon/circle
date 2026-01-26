@@ -65,6 +65,7 @@ import Appointment from '../appointments/model';
 
 Staff.belongsToMany(ServiceType, {
     through: 'staff_service_types',
+    as: 'serviceTypes',
     foreignKey: 'staff_id',
     otherKey: 'service_type_id',
 });

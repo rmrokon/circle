@@ -34,20 +34,31 @@ export default class StaffService implements IStaffService {
     async createStaff(body: IStaffRequestBody, options?: { t: Transaction }) {
         const { service_type_id, ...rest } = body;
         const staff = await this._repo.create(rest, options);
-        await staff.setServiceTypes([service_type_id]);
-        return this.convertToJson(staff as IDataValues<IStaff>)!;
+        if (service_type_id) {
+            await (staff as any).setServiceTypes([service_type_id]);
+        }
+        const json = this.convertToJson(staff as IDataValues<IStaff>)! as any;
+        json.serviceTypeId = service_type_id;
+        return json;
     }
 
     async getStaffs(query: Record<string, unknown>, options?: { t: Transaction }) {
-        const staffs = await this._repo.find(query, options);
-        return staffs.map((staff) => this.convertToJson(staff as unknown as IDataValues<IStaff>)!);
+        const staffs = await this._repo.findAll(query as any, options);
+        return staffs.map((staff: any) => {
+            const json = this.convertToJson(staff as unknown as IDataValues<IStaff>)! as any;
+            const serviceTypes = staff.serviceTypes || staff.dataValues?.serviceTypes || [];
+            if (serviceTypes.length > 0) {
+                json.serviceTypeId = serviceTypes[0].id;
+                json.service_type_id = serviceTypes[0].id;
+            }
+            return json;
+        });
     }
 
     async getStaffsWithAppointments(query: Record<string, unknown>, options?: { t: Transaction }) {
         const staffs = await this._repo.findAll({
             ...query,
-            // include: [Appointment],
-        }, options);
+        } as any, options);
         return staffs;
     }
 
@@ -56,8 +67,14 @@ export default class StaffService implements IStaffService {
         body: Partial<IStaffRequestBody>,
         options?: { t: Transaction },
     ) {
-        const staff = await this._repo.update(query, body, options);
-        return staff as IDataValues<IStaff>;
+        const { service_type_id, ...rest } = body as any;
+        const staff = await this._repo.update(query, rest, options);
+        if (service_type_id) {
+            await (staff as any).setServiceTypes([service_type_id]);
+        }
+        const json = this.convertToJson(staff as any)! as any;
+        json.serviceTypeId = service_type_id;
+        return json;
     }
 
     async findStaffById(id: string, options?: { t: Transaction }) {

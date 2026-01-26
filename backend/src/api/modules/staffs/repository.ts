@@ -5,6 +5,7 @@ import { BaseRepository } from '../baseRepo';
 import { Op, Transaction, WhereOptions } from '@sequelize/core';
 import Appointment from '../appointments/model';
 import { AppointmentStatus } from '../appointments/types';
+import ServiceType from '../service-types/model';
 
 export default class StaffRepository extends DefaultRepository<Staff> implements BaseRepository<IStaff, ICreateStaff> {
     _model;
@@ -33,6 +34,11 @@ export default class StaffRepository extends DefaultRepository<Staff> implements
                             [Op.eq]: AppointmentStatus.Scheduled,
                         },
                     },
+                    required: false
+                },
+                {
+                    model: ServiceType,
+                    as: 'serviceTypes',
                     required: false
                 }
             ],
