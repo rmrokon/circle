@@ -154,7 +154,7 @@ export function AppointmentForm({
                                                 <SelectLabel>Staffs</SelectLabel>
                                                 {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
                                                     <SelectItem key={s.id} value={s.id}>
-                                                        <div className="flex flex-col gap-[4px]">
+                                                        <div className="flex flex-col gap-[4px] p-[4px]">
                                                             <span className="text-[12px]">{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
                                                             <Badge variant={(s.appointments?.length || 0) >= s.dailyCapacity ? "destructive" : "default"} className="text-[9px]">
                                                                 {(s.appointments?.length || 0) >= s.dailyCapacity ? `${s.name} already has ${s.appointments?.length || 0} appointments today.` : "Available"}
