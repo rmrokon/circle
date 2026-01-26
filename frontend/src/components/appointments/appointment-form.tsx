@@ -65,11 +65,13 @@ export function AppointmentForm({
         if (isOpen) {
             if (initialData) {
                 form.reset({
-                    customerName: initialData.customerName,
-                    serviceId: initialData.serviceId,
-                    staffId: initialData.staffId || "",
-                    appointmentDateTime: new Date(initialData.appointmentDateTime).toISOString().slice(0, 16),
-                    status: initialData.status,
+                    customerName: initialData.customerName || (initialData as any).customer_name || "",
+                    serviceId: initialData.serviceId || (initialData as any).service_id || "",
+                    staffId: initialData.staffId || (initialData as any).staff_id || "",
+                    appointmentDateTime: initialData.appointmentDateTime
+                        ? new Date(initialData.appointmentDateTime).toISOString().slice(0, 16)
+                        : "",
+                    status: initialData.status || "Scheduled",
                 });
             } else {
                 form.reset({
@@ -152,8 +154,8 @@ export function AppointmentForm({
                                                 <SelectLabel>Staffs</SelectLabel>
                                                 {staffs?.filter((s: any) => s.available === "available")?.map((s: any) => (
                                                     <SelectItem key={s.id} value={s.id}>
-                                                        <div className="flex flex-col gap-1">
-                                                            <span>{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
+                                                        <div className="flex flex-col gap-[4px]">
+                                                            <span className="text-[12px]">{s.name} ({s.appointments?.length || 0} / {s.dailyCapacity} appointments today)</span>
                                                             <Badge variant={(s.appointments?.length || 0) >= s.dailyCapacity ? "destructive" : "default"} className="text-[9px]">
                                                                 {(s.appointments?.length || 0) >= s.dailyCapacity ? `${s.name} already has ${s.appointments?.length || 0} appointments today.` : "Available"}
                                                             </Badge>

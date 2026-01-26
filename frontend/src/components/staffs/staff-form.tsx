@@ -144,10 +144,10 @@ export function StaffForm({
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Service Type</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value} defaultValue="test">
+                                    <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
                                             <SelectTrigger>
-                                                <SelectValue placeholder={initialData?.serviceTypes[0]?.name} color="text-muted-foreground" />
+                                                <SelectValue placeholder="Select type" />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>

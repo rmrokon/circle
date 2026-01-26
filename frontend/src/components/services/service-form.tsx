@@ -60,7 +60,7 @@ export function ServiceForm({
                 form.reset({
                     name: initialData.name,
                     duration: initialData.duration,
-                    serviceTypeId: initialData.serviceTypeId,
+                    serviceTypeId: initialData.serviceTypeId || (initialData as any).service_type_id || "",
                 });
             } else {
                 form.reset({
