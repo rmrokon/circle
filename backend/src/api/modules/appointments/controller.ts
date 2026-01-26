@@ -22,7 +22,15 @@ export default class AppointmentController {
 
     updateAppointment = async (req: Request, res: Response) => {
         const { appointmentId } = req.params;
+        const previousAppointment = await this._service.findAppointmentById(appointmentId);
         const appointment = await this._service.updateAppointment({ id: appointmentId }, req.body);
+
+        // Trigger auto-assignment if an appointment was cancelled
+        // This frees up the staff member to take items from the queue
+        if (req.body.status === 'Cancelled' && previousAppointment?.status !== 'Cancelled' && previousAppointment?.staffId) {
+            await this._service.assignQueueToStaff(previousAppointment.staffId);
+        }
+
         return SuccessResponses(req, res, appointment, { statusCode: 200 });
     };
 

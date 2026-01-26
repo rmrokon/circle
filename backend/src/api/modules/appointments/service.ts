@@ -14,6 +14,7 @@ export interface IAppointmentService {
         options?: { t: Transaction },
     ): Promise<IDataValues<IAppointment>>;
     findAppointmentById(id: string, options?: { t: Transaction }): Promise<IAppointment | null>;
+    assignQueueToStaff(staffId: string, options?: { t: Transaction }): Promise<void>;
 }
 
 export default class AppointmentService implements IAppointmentService {
@@ -32,7 +33,7 @@ export default class AppointmentService implements IAppointmentService {
 
     async createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }) {
         if (body?.staffId) {
-            const staffAppointmentsForToday = await staffService.findStaffAppointmentsForToday({ id: body.staffId, date: body.appointmentDateTime }, options);
+            const staffAppointmentsForToday = await staffService.findStaffAppointmentsOnDate({ id: body.staffId, date: body.appointmentDateTime }, options);
             if (staffAppointmentsForToday.appointments.length >= staffAppointmentsForToday.dailyCapacity) throw new Error(`${staffAppointmentsForToday.name} is not available for this date!`);
         }
         const appointment = await this._repo.create({ ...body, staffId: body.staffId || null }, options);
@@ -70,5 +71,39 @@ export default class AppointmentService implements IAppointmentService {
     async findAppointmentById(id: string, options?: { t: Transaction }) {
         const appointment = await this._repo.findById(id, options);
         return this.convertToJson(appointment as unknown as IDataValues<IAppointment>);
+    }
+
+    async assignQueueToStaff(staffId: string, options?: { t: Transaction }) {
+        // 1. Get staff and their current assignments for the relevant dates
+        const staff = await staffService.findStaffById(staffId, options);
+        if (!staff || staff.available !== 'available') return;
+
+        // In this system, we currently map one service type per staff in the service layer mapping, 
+        // but the DB supports many. Let's use the mapped serviceTypeId.
+        const serviceTypeId = (staff as any).serviceTypeId;
+        if (!serviceTypeId) return;
+
+        // 2. Fetch unassigned appointments for this service type
+        const queue = await this._repo.findUnassignedByServiceTypes([serviceTypeId], options);
+        if (queue.length === 0) return;
+
+        // 3. Try to assign as many as possible while respecting capacity
+        // To do this accurately across multiple appointments on the same date,
+        // we track local counts for this run.
+        const capacityCheckCache: Record<string, number> = {};
+
+        for (const appointment of queue) {
+            const date = appointment.appointmentDateTime.slice(0, 10);
+
+            if (capacityCheckCache[date] === undefined) {
+                const staffOnDate = await staffService.findStaffAppointmentsOnDate({ id: staffId, date: appointment.appointmentDateTime }, options);
+                capacityCheckCache[date] = staffOnDate.appointments.length;
+            }
+
+            if (capacityCheckCache[date] < staff.dailyCapacity) {
+                await this._repo.update({ id: appointment.id }, { staffId }, options);
+                capacityCheckCache[date]++;
+            }
+        }
     }
 }
