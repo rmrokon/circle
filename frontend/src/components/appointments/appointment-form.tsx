@@ -90,13 +90,17 @@ export function AppointmentForm({
     useEffect(() => {
         if (isOpen) {
             if (initialData) {
+                // Format date to local datetime-local string (YYYY-MM-DDTHH:mm)
+                const date = new Date(initialData.appointmentDateTime);
+                const localDateTime = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+                    .toISOString()
+                    .slice(0, 16);
+
                 form.reset({
                     customerName: initialData.customerName || (initialData as any).customer_name || "",
                     serviceId: initialData.serviceId || (initialData as any).service_id || "",
                     staffId: initialData.staffId || (initialData as any).staff_id || "",
-                    appointmentDateTime: initialData.appointmentDateTime
-                        ? new Date(initialData.appointmentDateTime).toISOString().slice(0, 16)
-                        : "",
+                    appointmentDateTime: localDateTime,
                     status: initialData.status || "Scheduled",
                 });
             } else {
