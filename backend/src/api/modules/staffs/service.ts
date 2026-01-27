@@ -4,6 +4,8 @@ import { IStaff } from './types';
 import { IStaffRequestBody } from './validations';
 import StaffRepository from './repository';
 import Appointment from '../appointments/model';
+import { activityService } from '../bootstrap';
+import { ActivityType } from '../activities/types';
 
 export interface IStaffService {
     createStaff(body: IStaffRequestBody, options?: { t: Transaction }): Promise<IStaff>;
@@ -39,6 +41,13 @@ export default class StaffService implements IStaffService {
         }
         const json = this.convertToJson(staff as IDataValues<IStaff>)! as any;
         json.serviceTypeId = serviceTypeId;
+
+        await activityService.logActivity({
+            type: ActivityType.STAFF_CREATED,
+            message: `New staff member ${json.name} added`,
+            metadata: { staffId: json.id }
+        }, options);
+
         return json;
     }
 
@@ -74,6 +83,15 @@ export default class StaffService implements IStaffService {
         }
         const json = this.convertToJson(staff as any)! as any;
         json.serviceTypeId = service_type_id;
+
+        if (body.available) {
+            await activityService.logActivity({
+                type: ActivityType.STAFF_AVAILABILITY_CHANGED,
+                message: `Staff ${json.name} is now ${body.available}`,
+                metadata: { staffId: query.id, status: body.available }
+            }, options);
+        }
+
         return json;
     }
 

@@ -3,7 +3,8 @@ import { IDataValues } from '../../../utils/index';
 import { IAppointment } from './types';
 import { IAppointmentRequestBody } from './validations';
 import AppointmentRepository from './repository';
-import { staffService, serviceService } from '../bootstrap';
+import { staffService, serviceService, activityService } from '../bootstrap';
+import { ActivityType } from '../activities/types';
 
 export interface IAppointmentService {
     createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }): Promise<IAppointment>;
@@ -72,6 +73,14 @@ export default class AppointmentService implements IAppointmentService {
             await this.validateStaffAvailability(body.staffId, body.appointmentDateTime, body.serviceId, undefined, options);
         }
         const appointment = await this._repo.create({ ...body, staffId: body.staffId || null }, options);
+
+        // Log Activity
+        await activityService.logActivity({
+            type: ActivityType.APPOINTMENT_CREATED,
+            message: `New appointment created for ${body.customerName}${body.staffId ? '' : ' (Waiting Queue)'}`,
+            metadata: { appointmentId: (appointment as any).id, staffId: body.staffId }
+        }, options);
+
         return this.convertToJson(appointment as IDataValues<IAppointment>)!;
     }
 
@@ -120,11 +129,11 @@ export default class AppointmentService implements IAppointmentService {
         body: Partial<IAppointmentRequestBody>,
         options?: { t: Transaction },
     ) {
+        const existing = await this._repo.findById(query.id, options);
         if (body?.staffId && body?.appointmentDateTime && body?.serviceId) {
             await this.validateStaffAvailability(body.staffId, body.appointmentDateTime, body.serviceId, query.id, options);
         } else if (body?.staffId || body?.appointmentDateTime || body?.serviceId) {
             // If only some fields are updated, we need to fetch the existing data to perform the check
-            const existing = await this._repo.findById(query.id, options);
             if (existing) {
                 const staffId = body.staffId || (existing as any).staffId;
                 const appointmentDateTime = body.appointmentDateTime || (existing as any).appointmentDateTime;
@@ -135,6 +144,24 @@ export default class AppointmentService implements IAppointmentService {
             }
         }
         const appointment = await this._repo.update(query, body, options);
+
+        if (existing && !(existing as any).staffId && body.staffId) {
+            const staff = await staffService.findStaffById(body.staffId, options);
+            await activityService.logActivity({
+                type: ActivityType.QUEUE_ASSIGNED,
+                message: `Staff ${staff?.name || 'Unknown'} assigned to ${(appointment as any).customerName}`,
+                metadata: { appointmentId: query.id, staffId: body.staffId }
+            }, options);
+        }
+
+        if (body.status === 'Cancelled') {
+            await activityService.logActivity({
+                type: ActivityType.APPOINTMENT_CANCELLED,
+                message: `Appointment for ${(appointment as any).customerName} was cancelled`,
+                metadata: { appointmentId: query.id }
+            }, options);
+        }
+
         return appointment as IDataValues<IAppointment>;
     }
 
@@ -173,6 +200,13 @@ export default class AppointmentService implements IAppointmentService {
             if (capacityCheckCache[date] < staff.dailyCapacity) {
                 await this._repo.update({ id: appointment.id }, { staffId }, options);
                 capacityCheckCache[date]++;
+
+                // Log Activity
+                await activityService.logActivity({
+                    type: ActivityType.QUEUE_ASSIGNED,
+                    message: `Queue appointment for ${(appointment as any).customerName} auto-assigned to ${staff.name}`,
+                    metadata: { appointmentId: appointment.id, staffId }
+                }, options);
             }
         }
     }

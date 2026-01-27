@@ -4,6 +4,8 @@ import { StaffRouter } from './staffs';
 import { ServiceTypeRouter } from './service-types';
 import { ServiceRouter } from './services';
 import { AppointmentRouter } from './appointments';
+import { ActivityRouter } from './activities';
+import { StatsRouter } from './stats';
 
 export const API = {
   '/credentials': CredentialRouter,
@@ -12,4 +14,6 @@ export const API = {
   '/service-types': ServiceTypeRouter,
   '/services': ServiceRouter,
   '/appointments': AppointmentRouter,
+  '/activities': ActivityRouter,
+  '/stats': StatsRouter,
 };

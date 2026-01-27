@@ -56,3 +56,13 @@ import AppointmentController from './appointments/controller';
 export const appointmentRepository = new AppointmentRepository(Appointment);
 export const appointmentService = new AppointmentService(appointmentRepository);
 export const appointmentController = new AppointmentController(appointmentService);
+
+// Activities
+import Activity from './activities/model';
+import ActivityRepository from './activities/repository';
+import ActivityService from './activities/service';
+import ActivityController from './activities/controller';
+
+export const activityRepository = new ActivityRepository(Activity);
+export const activityService = new ActivityService(activityRepository);
+export const activityController = new ActivityController(activityService);
