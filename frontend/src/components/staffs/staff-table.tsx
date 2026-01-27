@@ -26,7 +26,7 @@ export function StaffTable({ data, isLoading, onEdit }: StaffTableProps) {
                         <TableHead>No.</TableHead>
                         <TableHead>Name</TableHead>
                         <TableHead>Daily Capacity</TableHead>
-                        <TableHead>Today's Appointments</TableHead>
+                        <TableHead>Today&apos;s Appointments</TableHead>
                         <TableHead>Status</TableHead>
                         {!!data?.length && <TableHead className="text-right">Actions</TableHead>}
                     </TableRow>
