@@ -101,6 +101,7 @@ export default function AppointmentsPage() {
                 onSubmit={onSubmit}
                 services={services || []}
                 staffs={staffs || []}
+                appointments={appointments || []}
                 isSubmitting={createMutation.isPending || updateMutation.isPending}
             />
         </div>

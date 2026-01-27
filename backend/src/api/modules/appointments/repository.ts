@@ -3,7 +3,7 @@ import Appointment from './model';
 import DefaultRepository from '../default-repository';
 import { BaseRepository } from '../baseRepo';
 import Service from '../services/model';
-import { Transaction } from '@sequelize/core';
+import { Op, Transaction } from '@sequelize/core';
 
 export default class AppointmentRepository extends DefaultRepository<Appointment> implements BaseRepository<IAppointment, ICreateAppointment> {
     _model;
@@ -28,6 +28,25 @@ export default class AppointmentRepository extends DefaultRepository<Appointment
                 },
             ],
             order: [['appointmentDateTime', 'ASC']],
+            transaction: options?.t,
+        });
+    }
+
+    async findStaffAppointmentsWithServices(staffId: string, startDate: string, endDate: string, options?: { t: Transaction }) {
+        return this._model.findAll({
+            where: {
+                staffId,
+                status: 'Scheduled',
+                appointmentDateTime: {
+                    [Op.between]: [startDate, endDate],
+                },
+            },
+            include: [
+                {
+                    model: Service,
+                    required: true,
+                },
+            ],
             transaction: options?.t,
         });
     }

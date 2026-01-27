@@ -3,7 +3,7 @@ import { IDataValues } from '../../../utils/index';
 import { IAppointment } from './types';
 import { IAppointmentRequestBody } from './validations';
 import AppointmentRepository from './repository';
-import { staffService } from '../bootstrap';
+import { staffService, serviceService } from '../bootstrap';
 
 export interface IAppointmentService {
     createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }): Promise<IAppointment>;
@@ -31,10 +31,45 @@ export default class AppointmentService implements IAppointmentService {
         };
     }
 
+    private async validateStaffAvailability(staffId: string, appointmentDateTime: string, serviceId: string, excludeAppointmentId?: string, options?: { t: Transaction }) {
+        // 1. Get requested service duration
+        const service = await serviceService.findServiceById(serviceId, options);
+        if (!service) throw new Error('Service not found!');
+
+        const duration = service.duration;
+        const startTime = new Date(appointmentDateTime).getTime();
+        const endTime = startTime + duration * 60000;
+
+        // 2. Fetch staff appointments for the day
+        const startOfDay = `${appointmentDateTime.slice(0, 10)}T00:00:00`;
+        const endOfDay = `${appointmentDateTime.slice(0, 10)}T23:59:59`;
+        const existingAppointments = await this._repo.findStaffAppointmentsWithServices(staffId, startOfDay, endOfDay, options);
+
+        // 3. Check for overlap
+        for (const existing of existingAppointments) {
+            if (excludeAppointmentId && existing.id === excludeAppointmentId) continue;
+
+            const existingStart = new Date((existing as any).appointmentDateTime).getTime();
+            const existingDuration = (existing as any).Service?.duration || 0;
+            const existingEnd = existingStart + existingDuration * 60000;
+
+            if (startTime < existingEnd && existingStart < endTime) {
+                // We have a conflict
+                const error: any = new Error('This staff member already has an appointment at this time.');
+                error.statusCode = 409;
+                throw error;
+            }
+        }
+    }
+
     async createAppointment(body: IAppointmentRequestBody, options?: { t: Transaction }) {
         if (body?.staffId) {
+            // Check daily capacity
             const staffAppointmentsForToday = await staffService.findStaffAppointmentsOnDate({ id: body.staffId, date: body.appointmentDateTime }, options);
             if (staffAppointmentsForToday.appointments.length >= staffAppointmentsForToday.dailyCapacity) throw new Error(`${staffAppointmentsForToday.name} is not available for this date!`);
+
+            // Check time conflict
+            await this.validateStaffAvailability(body.staffId, body.appointmentDateTime, body.serviceId, undefined, options);
         }
         const appointment = await this._repo.create({ ...body, staffId: body.staffId || null }, options);
         return this.convertToJson(appointment as IDataValues<IAppointment>)!;
@@ -85,6 +120,20 @@ export default class AppointmentService implements IAppointmentService {
         body: Partial<IAppointmentRequestBody>,
         options?: { t: Transaction },
     ) {
+        if (body?.staffId && body?.appointmentDateTime && body?.serviceId) {
+            await this.validateStaffAvailability(body.staffId, body.appointmentDateTime, body.serviceId, query.id, options);
+        } else if (body?.staffId || body?.appointmentDateTime || body?.serviceId) {
+            // If only some fields are updated, we need to fetch the existing data to perform the check
+            const existing = await this._repo.findById(query.id, options);
+            if (existing) {
+                const staffId = body.staffId || (existing as any).staffId;
+                const appointmentDateTime = body.appointmentDateTime || (existing as any).appointmentDateTime;
+                const serviceId = body.serviceId || (existing as any).serviceId;
+                if (staffId && appointmentDateTime && serviceId) {
+                    await this.validateStaffAvailability(staffId, appointmentDateTime, serviceId, query.id, options);
+                }
+            }
+        }
         const appointment = await this._repo.update(query, body, options);
         return appointment as IDataValues<IAppointment>;
     }

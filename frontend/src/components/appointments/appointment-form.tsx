@@ -16,12 +16,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AppointmentFilters } from "./appointment-filters";
+import { ConflictResolutionDialog } from "./conflict-resolution-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const appointmentSchema = z.object({
     customerName: z.string().min(1, "Customer name is required"),
@@ -38,6 +40,7 @@ interface AppointmentFormProps {
     onSubmit: (values: z.infer<typeof appointmentSchema>) => void;
     services: any[];
     staffs: any[];
+    appointments?: any[];
     isSubmitting: boolean;
 }
 
@@ -48,8 +51,12 @@ export function AppointmentForm({
     onSubmit,
     services,
     staffs,
+    appointments,
     isSubmitting
 }: AppointmentFormProps) {
+    const [isConflictDialogOpen, setIsConflictDialogOpen] = useState(false);
+    const [pendingValues, setPendingValues] = useState<z.infer<typeof appointmentSchema> | null>(null);
+
     const form = useForm<z.infer<typeof appointmentSchema>>({
         resolver: zodResolver(appointmentSchema),
         defaultValues: {
@@ -104,8 +111,49 @@ export function AppointmentForm({
         }
     }, [isOpen, initialData, form]);
 
+    const checkConflict = (values: z.infer<typeof appointmentSchema>) => {
+        if (!values.staffId || !values.appointmentDateTime || !values.serviceId) return false;
+
+        const service = services.find(s => s.id === values.serviceId);
+        if (!service) return false;
+
+        const duration = service.duration;
+        const newStart = new Date(values.appointmentDateTime).getTime();
+        const newEnd = newStart + duration * 60000;
+
+        return appointments?.some((app: any) => {
+            if (initialData && app.id === initialData.id) return false;
+            // Only check scheduled appointments for the same staff
+            if (app.staffId !== values.staffId || app.status !== "Scheduled") return false;
+
+            const existingStart = new Date(app.appointmentDateTime).getTime();
+            const existingService = services.find(s => s.id === app.serviceId);
+            const existingDuration = existingService?.duration || 0;
+            const existingEnd = existingStart + existingDuration * 60000;
+
+            return newStart < existingEnd && existingStart < newEnd;
+        });
+    };
+
     const handleSubmit = (values: z.infer<typeof appointmentSchema>) => {
+        if (checkConflict(values)) {
+            setPendingValues(values);
+            setIsConflictDialogOpen(true);
+            return;
+        }
         onSubmit(values);
+    };
+
+    const handlePickAnotherStaff = () => {
+        setIsConflictDialogOpen(false);
+        form.setValue("staffId", "");
+        setPendingValues(null);
+    };
+
+    const handleChangeTime = () => {
+        setIsConflictDialogOpen(false);
+        setPendingValues(null);
+        // User stays on the form to pick another time
     };
 
     return (
@@ -232,6 +280,12 @@ export function AppointmentForm({
                     </form>
                 </Form>
             </DialogContent>
+            <ConflictResolutionDialog
+                isOpen={isConflictDialogOpen}
+                onClose={() => setIsConflictDialogOpen(false)}
+                onPickAnotherStaff={handlePickAnotherStaff}
+                onChangeTime={handleChangeTime}
+            />
         </Dialog>
     );
 }
