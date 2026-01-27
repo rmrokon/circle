@@ -28,15 +28,7 @@ export default class UserController {
   updateUser = async (req: Request, res: Response) => {
     const { userId } = req.params as { userId: string };
     // @ts-ignore
-    const result = await this._service.updateUser({id: userId}, req.body);
-    return SuccessResponses(req, res, result, {
-      statusCode: 200,
-    });
-  };
-
-  setUserGoal = async (req: Request, res: Response) => {
-    const { userId, purposeId } = req.params as { userId: string; purposeId: string };
-    const result = await this._service.setUserGoal(userId, purposeId);
+    const result = await this._service.updateUser({ id: userId }, req.body);
     return SuccessResponses(req, res, result, {
       statusCode: 200,
     });

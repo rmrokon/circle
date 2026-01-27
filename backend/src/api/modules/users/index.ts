@@ -72,24 +72,4 @@ UserRouter.route('/')
  */
 UserRouter.route('/:userId').patch([isAuthenticated], asyncCatchHandler(userController.updateUser));
 
-/**
- * @swagger
- * /users/{userId}/goals/{purposeId}:
- *   post:
- *     summary: Set a goal/purpose for a user
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *       - in: path
- *         name: purposeId
- *         required: true
- *     responses:
- *       200:
- *         description: Goal set successfully
- */
-UserRouter.route('/:userId/goals/:purposeId').post([isAuthenticated], asyncCatchHandler(userController.setUserGoal));
 

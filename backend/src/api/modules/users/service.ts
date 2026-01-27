@@ -9,8 +9,6 @@ import {
 } from './types';
 import { sequelize } from '../../../loaders/datasource';
 import User from './model';
-import { purposeService } from '../bootstrap';
-import { IPurpose } from '../purposes/types';
 import UserRepository from './repository';
 
 export interface IUserService {
@@ -21,7 +19,6 @@ export interface IUserService {
     options?: { t: Transaction },
   ): Promise<IDataValues<IUser>>;
   find(query: Record<string, unknown>, options?: { t: Transaction }): Promise<Partial<IUser>[]>;
-  setUserGoal(userId: string, purposeId: string): Promise<Partial<IPurpose>>;
 }
 
 export default class UserService implements IUserService {
@@ -38,7 +35,7 @@ export default class UserService implements IUserService {
     };
   }
 
-  async createUser(body: IUserRequestBody & {type: UserType }, options?: { t: Transaction }) {
+  async createUser(body: IUserRequestBody & { type: UserType }, options?: { t: Transaction }) {
     const user = await this._repo.create(body, options);
     return this.convertToJson(user as IDataValues<IUser>)!;
   }
@@ -48,7 +45,7 @@ export default class UserService implements IUserService {
     return users;
   }
 
-  async createUserRaw(body: IUserRequestBody & {type: UserType }, options?: { t: Transaction }) {
+  async createUserRaw(body: IUserRequestBody & { type: UserType }, options?: { t: Transaction }) {
     const user = await this._repo.create(body, options);
     return user;
   }
@@ -59,10 +56,10 @@ export default class UserService implements IUserService {
     options?: { t: Transaction },
   ) {
     console.log('here');
-    
+
     const user = await this._repo.update(query, body, options);
-    console.log({user});
-    
+    console.log({ user });
+
     return user as IDataValues<IUser>;
   }
 
@@ -95,13 +92,5 @@ export default class UserService implements IUserService {
       model: User,
     });
     return record;
-  }
-
-  async setUserGoal(userId: string, purposeId: string) {
-    const user = await this._repo.findById(userId);
-    const purpose = await purposeService.findPurposeById(purposeId);
-    //@ts-ignore
-    await user.addPurpose(purpose);
-    return purpose;
   }
 }

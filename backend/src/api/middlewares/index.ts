@@ -3,4 +3,3 @@ export { default as validateRequestBody } from './validateRequestBody';
 export { default as isAuthenticated } from './isAuthenticated';
 export { default as parseAuth } from './parseAuth';
 export { default as hasValidAuthToken } from './hasValidAuthToken';
-export { default as requireAuthor } from './requireAuthor';

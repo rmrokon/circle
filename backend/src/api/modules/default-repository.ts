@@ -9,8 +9,7 @@ type Options = { t?: Transaction };
 export default abstract class DefaultRepository<
   M extends Model,
   Query extends WhereOptions<M> & Partial<Attributes<M>> = WhereOptions<M> & Partial<Attributes<M>>,
-> implements BaseRepository<Attributes<M>, CreationAttributes<M>>
-{
+> implements BaseRepository<Attributes<M>, CreationAttributes<M>> {
   abstract _model: ModelStatic<M>;
 
   async create(data: CreationAttributes<M>, options?: Options) {
@@ -74,7 +73,6 @@ export default abstract class DefaultRepository<
   ) {
     const { limit = 10, page = 1, ...query } = _query ?? {};
     const { order, t, ...otherOptions } = options ?? {};
-    // eslint-disable-next-line prefer-const
     let { rows, count } = await this._model.findAndCountAll({
       where: query as WhereOptions<Attributes<M>>,
       limit: +limit || 10,
@@ -84,6 +82,7 @@ export default abstract class DefaultRepository<
       ...otherOptions,
     });
     if (otherOptions?.include) {
+      //@ts-ignore
       count = await this._model.count({ where: query as WhereOptions<Attributes<M>>, transaction: t });
     }
     const builder = Paginate.builder();

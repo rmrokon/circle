@@ -18,15 +18,16 @@ export const sequelize = new Sequelize<PostgresDialect>({
   retry: {
     max: 3,
   },
+  // For development environment disable ssl
   ssl: {
     rejectUnauthorized: true,
     ca: CA_CERT,
   },
   pool: {
-    max: 3, // Reduce max connections per pod
+    max: 3,
     min: 1,
-    acquire: 20000, // Allow longer time to acquire a connection
-    idle: 5000, // Reduce idle time to free up connections faster
+    acquire: 20000,
+    idle: 5000,
   },
 });
 
