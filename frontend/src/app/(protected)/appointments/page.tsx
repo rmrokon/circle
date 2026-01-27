@@ -8,9 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { AppointmentTable } from "@/components/appointments/appointment-table";
 import { AppointmentForm } from "@/components/appointments/appointment-form";
+import { AppointmentFilters } from "@/components/appointments/appointment-filters";
 
 export default function AppointmentsPage() {
-    const { data: appointments, isLoading: isLoadingAppointments } = useAppointments();
+    const [filters, setFilters] = useState({
+        staffId: "",
+        startDate: "",
+        endDate: "",
+    });
+
+    const { data: appointments, isLoading: isLoadingAppointments } = useAppointments(filters);
     const { data: services } = useServices();
     const { data: staffs } = useStaffs();
 
@@ -50,6 +57,14 @@ export default function AppointmentsPage() {
         setIsDialogOpen(true);
     };
 
+    const clearFilters = () => {
+        setFilters({
+            staffId: "",
+            startDate: "",
+            endDate: "",
+        });
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -63,6 +78,13 @@ export default function AppointmentsPage() {
                     <Plus className="mr-2 h-4 w-4" /> Book Appointment
                 </Button>
             </div>
+
+            <AppointmentFilters
+                filters={filters}
+                onFilterChange={setFilters}
+                onClear={clearFilters}
+                staffs={staffs || []}
+            />
 
             <AppointmentTable
                 data={appointments}

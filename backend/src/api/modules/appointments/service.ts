@@ -1,4 +1,4 @@
-import { Transaction } from '@sequelize/core';
+import { Op, Transaction } from '@sequelize/core';
 import { IDataValues } from '../../../utils/index';
 import { IAppointment } from './types';
 import { IAppointmentRequestBody } from './validations';
@@ -41,18 +41,39 @@ export default class AppointmentService implements IAppointmentService {
     }
 
     async getAppointments(query: Record<string, unknown>, options?: { t: Transaction }) {
-        const whereQuery = { ...query };
+        const { unassigned, startDate, endDate, staffId, ...rest } = query;
+        const whereQuery: any = { ...rest };
         let isUnassigned = false;
 
-        if (whereQuery.unassigned === 'true' || whereQuery.unassigned === true) {
+        if (unassigned === 'true' || unassigned === true) {
             isUnassigned = true;
-            delete whereQuery.unassigned;
             whereQuery.staffId = null;
+        } else if (staffId) {
+            whereQuery.staffId = staffId;
         }
 
-        const appointments = await this._repo.find(whereQuery as any, options);
+        if (startDate || endDate) {
+            const start = startDate ? `${(startDate as string).slice(0, 10)}T00:00:00` : undefined;
+            const end = endDate ? `${(endDate as string).slice(0, 10)}T23:59:59` : (startDate ? `${(startDate as string).slice(0, 10)}T23:59:59` : undefined);
 
-        if (isUnassigned) {
+            if (start && end) {
+                whereQuery.appointmentDateTime = {
+                    [Op.between]: [start, end],
+                };
+            } else if (start) {
+                whereQuery.appointmentDateTime = {
+                    [Op.gte]: start,
+                };
+            } else if (end) {
+                whereQuery.appointmentDateTime = {
+                    [Op.lte]: end,
+                };
+            }
+        }
+
+        const appointments = await this._repo.find(whereQuery, options);
+
+        if (isUnassigned || startDate || endDate) {
             appointments.sort((a, b) => new Date(a.appointmentDateTime).getTime() - new Date(b.appointmentDateTime).getTime());
         }
 
