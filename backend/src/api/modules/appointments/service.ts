@@ -33,20 +33,32 @@ export default class AppointmentService implements IAppointmentService {
     }
 
     private async validateStaffAvailability(staffId: string, appointmentDateTime: string, serviceId: string, excludeAppointmentId?: string, options?: { t: Transaction }) {
-        // 1. Get requested service duration
+        // 1. Get requested service
         const service = await serviceService.findServiceById(serviceId, options);
         if (!service) throw new Error('Service not found!');
 
+        // 2. Fetch staff and check if they match the service type
+        const staff = await staffService.findStaffById(staffId, options);
+        if (!staff) throw new Error('Staff not found!');
+
+        const serviceTypeId = (staff as any).serviceTypeId;
+        if (serviceTypeId !== service.serviceTypeId) {
+            const error: any = new Error(`This staff member cannot perform ${service.name}.`);
+            error.statusCode = 400;
+            throw error;
+        }
+
+        // 3. Get requested service duration and check overlap
         const duration = service.duration;
         const startTime = new Date(appointmentDateTime).getTime();
         const endTime = startTime + duration * 60000;
 
-        // 2. Fetch staff appointments for the day
+        // 4. Fetch staff appointments for the day
         const startOfDay = `${appointmentDateTime.slice(0, 10)}T00:00:00`;
         const endOfDay = `${appointmentDateTime.slice(0, 10)}T23:59:59`;
         const existingAppointments = await this._repo.findStaffAppointmentsWithServices(staffId, startOfDay, endOfDay, options);
 
-        // 3. Check for overlap
+        // 5. Check for overlap
         for (const existing of existingAppointments) {
             if (excludeAppointmentId && existing.id === excludeAppointmentId) continue;
 

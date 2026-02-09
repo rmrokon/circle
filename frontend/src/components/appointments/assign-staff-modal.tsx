@@ -18,6 +18,7 @@ interface AssignStaffModalProps {
     staffs: any[];
     onAssign: (staffId: string) => void;
     isAssigning: boolean;
+    serviceTypeId?: string;
 }
 
 export function AssignStaffModal({
@@ -25,13 +26,15 @@ export function AssignStaffModal({
     onClose,
     staffs,
     onAssign,
-    isAssigning
+    isAssigning,
+    serviceTypeId
 }: AssignStaffModalProps) {
     const [searchTerm, setSearchTerm] = useState("");
     const [selectedStaffId, setSelectedStaffId] = useState<string | null>(null);
 
     const filteredStaffs = staffs?.filter(staff =>
         (staff.available === "available") &&
+        (!serviceTypeId || staff.serviceTypeId === serviceTypeId) &&
         staff.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 

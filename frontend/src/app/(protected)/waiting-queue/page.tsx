@@ -18,9 +18,12 @@ export default function WaitingQueuePage() {
 
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
     const [selectedAppointmentId, setSelectedAppointmentId] = useState<string | null>(null);
+    const [selectedServiceTypeId, setSelectedServiceTypeId] = useState<string | null>(null);
 
     const handleAssignClick = (item: any) => {
         setSelectedAppointmentId(item.id);
+        const service = services?.find((s: any) => s.id === item.serviceId);
+        setSelectedServiceTypeId(service?.serviceTypeId || null);
         setIsAssignModalOpen(true);
     };
 
@@ -70,6 +73,7 @@ export default function WaitingQueuePage() {
                 staffs={staffs || []}
                 onAssign={handleAssignStaff}
                 isAssigning={updateMutation.isPending}
+                serviceTypeId={selectedServiceTypeId || undefined}
             />
         </div>
     );
